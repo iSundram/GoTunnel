@@ -1,0 +1,61 @@
+# /etc/gotunnel/config.yml
+server:
+  listen_http: ":80"
+  listen_https: ":443"
+  gateway_host: "0.0.0.0"
+  public_hostname: "gotunnel.example.com"
+  allowed_domains:
+    - "gotunnel.example.com"
+  tls:
+    enabled: false
+    auto_lets_encrypt: false
+    cert_dir: "/var/lib/gotunnel/certs"
+    acme:
+      email: "ops@example.com"
+      staging: true
+
+auth:
+  token_signing_key: "change-me-to-a-secure-base64-encoded-secret"
+  token_ttl_minutes: 525600
+  enable_jwt: false
+  jwt_issuer: "gotunnel"
+  jwt_audience: "gotunnel-clients"
+
+storage:
+  type: "memory"
+  redis:
+    addr: "127.0.0.1:6379"
+    db: 0
+    password: ""
+  postgres:
+    dsn: ""
+
+registry:
+  reserved_subdomains:
+    - "admin"
+    - "api"
+    - "www"
+  default_ttl_seconds: 3600
+  max_subdomain_length: 32
+
+limits:
+  max_tunnels_per_user: 10
+  max_bandwidth_per_tunnel_mbps: 100
+  max_concurrent_streams_per_tunnel: 256
+  request_rate_per_ip_per_min: 600
+
+logging:
+  level: "info"
+  format: "json"
+  file: ""
+
+metrics:
+  enabled: true
+  bind_addr: ":9090"
+
+security:
+  ip_blacklist: []
+  ip_whitelist: []
+  enable_mtls: false
+  mtls:
+    ca_cert_file: ""

@@ -28,14 +28,15 @@ import (
 
 // Server is the main GoTunnel gateway server.
 type Server struct {
-	cfg      *config.Config
-	registry registry.Registry
-	broker   *broker.Broker
-	proxy    *proxy.Proxy
-	admin    *admin.AdminAPI
-	auth     auth.TokenStore
-	metrics  *metrics.Metrics
-	logger   *logging.Logger
+	cfg         *config.Config
+	registry    registry.Registry
+	broker      *broker.Broker
+	proxy       *proxy.Proxy
+	admin       *admin.AdminAPI
+	auth        auth.TokenStore
+	metrics     *metrics.Metrics
+	logger      *logging.Logger
+	rateLimiter *RateLimiter
 }
 
 var upgrader = websocket.Upgrader{
@@ -66,15 +67,18 @@ func NewServer(cfg *config.Config) (*Server, error) {
 
 	a := admin.NewAdminAPI(tokenStore, reg, m, log)
 
+	rl := NewRateLimiter(cfg.Limits.RequestRatePerIPPerMin)
+
 	return &Server{
-		cfg:      cfg,
-		registry: reg,
-		broker:   b,
-		proxy:    p,
-		admin:    a,
-		auth:     tokenStore,
-		metrics:  m,
-		logger:   log.WithComponent("server"),
+		cfg:         cfg,
+		registry:    reg,
+		broker:      b,
+		proxy:       p,
+		admin:       a,
+		auth:        tokenStore,
+		metrics:     m,
+		logger:      log.WithComponent("server"),
+		rateLimiter: rl,
 	}, nil
 }
 
@@ -92,7 +96,7 @@ func (s *Server) Start() error {
 
 	httpServer := &http.Server{
 		Addr:    s.cfg.Server.ListenHTTP,
-		Handler: mux,
+		Handler: s.rateLimiter.Middleware(mux),
 	}
 
 	errCh := make(chan error, 1)
