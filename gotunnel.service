@@ -1,0 +1,14 @@
+[Unit]
+Description=GoTunnel Gateway
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/gotunnel server --config /etc/gotunnel/config.yml
+Restart=on-failure
+User=gotunnel
+LimitNOFILE=65536
+Environment=GOTUNNEL_LOG_LEVEL=info
+
+[Install]
+WantedBy=multi-user.target
