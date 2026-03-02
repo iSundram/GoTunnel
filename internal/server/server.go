@@ -40,6 +40,9 @@ type Server struct {
 }
 
 var upgrader = websocket.Upgrader{
+	// Allow all origins: clients are CLI tools and non-browser agents.
+	// Authentication is enforced at the protocol level via token validation
+	// after WebSocket upgrade, not via browser-origin checks.
 	CheckOrigin: func(r *http.Request) bool { return true },
 }
 
